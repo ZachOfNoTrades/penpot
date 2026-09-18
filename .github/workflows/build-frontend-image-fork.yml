@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - 'feat/**'
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
 
 concurrency:
