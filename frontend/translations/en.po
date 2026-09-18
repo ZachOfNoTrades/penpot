@@ -10097,3 +10097,43 @@ msgstr "Autosaved versions will be kept for %s days."
 #, unused
 msgid "workspace.viewport.click-to-close-path"
 msgstr "Click to close the path"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.title"
+msgstr "Animation"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.add"
+msgstr "Add animation"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.remove"
+msgstr "Remove animation"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.toggle"
+msgstr "Toggle animation"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.type"
+msgstr "Animation preset"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.duration"
+msgstr "Duration (ms)"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.delay"
+msgstr "Delay (ms)"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.easing"
+msgstr "Easing"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.repeat"
+msgstr "Repeat"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/animation.cljs
+msgid "workspace.options.animation-options.direction"
+msgstr "Direction"

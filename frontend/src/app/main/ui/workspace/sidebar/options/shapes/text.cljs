@@ -14,6 +14,7 @@
    [app.main.features :as features]
    [app.main.refs :as refs]
    [app.main.store :as st]
+   [app.main.ui.workspace.sidebar.options.menus.animation :refer [animation-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.blur :refer [blur-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.color-selection :refer [color-selection-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.constraints :refer [constraint-attrs constraints-menu*]]
@@ -219,6 +220,9 @@
      [:> blur-menu*
       {:ids ids
        :values (select-keys shape [:blur :background-blur])}]
+
+     [:> animation-menu* {:ids ids
+                          :values (select-keys shape [:animation])}]
 
      [:> exports-menu* {:type type
                         :ids ids

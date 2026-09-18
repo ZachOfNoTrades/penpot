@@ -11,6 +11,7 @@
    [app.common.data.macros :as dm]
    [app.common.types.shape.layout :as ctl]
    [app.main.refs :as refs]
+   [app.main.ui.workspace.sidebar.options.menus.animation :refer [animation-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.blur :refer [blur-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.color-selection :refer [color-selection-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.constraints :refer [constraints-menu*]]
@@ -173,6 +174,9 @@
 
      (when-not (empty? blur-ids)
        [:> blur-menu* {:type type :ids blur-ids :values blur-values}])
+
+     [:> animation-menu* {:ids ids
+                          :values (select-keys shape [:animation])}]
 
      (when-not (empty? text-ids)
        [:> ot/text-menu* {:type type

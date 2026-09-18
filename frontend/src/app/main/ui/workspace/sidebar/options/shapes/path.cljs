@@ -9,6 +9,7 @@
    [app.common.data.macros :as dm]
    [app.common.types.shape.layout :as ctl]
    [app.main.refs :as refs]
+   [app.main.ui.workspace.sidebar.options.menus.animation :refer [animation-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.blur :refer [blur-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.constraints :refer [constraint-attrs constraints-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.exports :refer [exports-menu* exports-attrs]]
@@ -135,6 +136,9 @@
      [:> shadow-menu* {:ids ids :values (get shape :shadow)}]
      [:> blur-menu* {:ids ids
                      :values (select-keys shape [:blur :background-blur])}]
+
+     [:> animation-menu* {:ids ids
+                          :values (select-keys shape [:animation])}]
      [:> svg-attrs-menu* {:ids ids
                           :values (select-keys shape [:svg-attrs])}]
      [:> exports-menu* {:type type

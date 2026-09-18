@@ -10,6 +10,7 @@
    [app.common.types.component :as ctk]
    [app.common.types.shape.layout :as ctl]
    [app.main.refs :as refs]
+   [app.main.ui.workspace.sidebar.options.menus.animation :refer [animation-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.blur :refer [blur-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.color-selection :refer [color-selection-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.component :refer [component-menu* component-variant-main*]]
@@ -161,6 +162,9 @@
      [:> shadow-menu* {:ids ids :values (get shape :shadow)}]
      [:> blur-menu* {:ids ids
                      :values (select-keys shape [:blur :background-blur])}]
+
+     [:> animation-menu* {:ids ids
+                          :values (select-keys shape [:animation])}]
      [:> frame-grid* {:grids (:grids shape)
                       :id (:id shape)
                       :frame-width (:width shape)
