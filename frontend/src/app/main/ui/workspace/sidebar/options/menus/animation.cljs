@@ -43,6 +43,18 @@
    {:id "3" :label "3×"}
    {:id "5" :label "5×"}])
 
+(defn- iterations->id
+  [iterations]
+  (if (= iterations :infinite) "infinite" (str iterations)))
+
+(defn- get-iteration-options
+  "The repeat options, plus the current count when it is not one of them."
+  [iterations]
+  (let [id (iterations->id iterations)]
+    (if (some #(= id (:id %)) iteration-options)
+      iteration-options
+      (conj iteration-options {:id id :label (str id "×")}))))
+
 (defn- parse-iterations
   [value]
   (if (= value "infinite")
@@ -68,9 +80,11 @@
               (fn [shape]
                 (update shape :animation
                         (fn [animation]
-                          (-> animation
-                              (assoc :type type)
-                              (assoc :iterations (get ctsa/default-iterations type 1))))))))))
+                          (let [defaults (ctsa/create-animation type)]
+                            (-> animation
+                                (assoc :type type)
+                                (assoc :easing (:easing defaults))
+                                (assoc :iterations (:iterations defaults)))))))))))
 
         handle-duration  (mf/use-fn (mf/deps update-attr) #(update-attr :duration (max 1 (or % 1000))))
         handle-delay     (mf/use-fn (mf/deps update-attr) #(update-attr :delay (max 0 (or % 0))))
@@ -138,10 +152,9 @@
                    :disabled is-hidden
                    :on-change handle-easing}]
       [:> select* {:class (stl/css :half-select)
-                   :default-selected (let [n (or (:iterations value) 1)]
-                                       (if (= n :infinite) "infinite" (str n)))
+                   :default-selected (iterations->id (or (:iterations value) 1))
                    :aria-label (tr "workspace.options.animation-options.repeat")
-                   :options iteration-options
+                   :options (get-iteration-options (or (:iterations value) 1))
                    :disabled is-hidden
                    :on-change handle-repeat}]]
 
@@ -203,8 +216,8 @@
                              :aria-label (tr "workspace.options.animation-options.remove")
                              :on-click handle-delete-all
                              :icon i/remove}]]
-          ;; Keyed by the selection so the selects pick up the values of
-          ;; a newly selected shape.
-          [:> animation-content* {:key (str/join "," ids)
+          ;; Selects read their value on mount: key by selection and
+          ;; preset so a new shape or preset defaults show up.
+          [:> animation-content* {:key (str (str/join "," ids) ":" (d/name (:type animation)))
                                   :value animation
                                   :change-fn change!}])])]))
