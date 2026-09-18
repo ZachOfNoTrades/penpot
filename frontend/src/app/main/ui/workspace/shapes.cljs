@@ -17,6 +17,7 @@
    [app.common.files.helpers :as cfh]
    [app.common.geom.rect :as grc]
    [app.common.geom.shapes :as gsh]
+   [app.common.types.shape.animation :as ctsa]
    [app.common.uuid :as uuid]
    [app.main.ui.context :as ctx]
    [app.main.ui.shapes.circle :as circle]
@@ -69,6 +70,15 @@
         frame-overlap? (mf/with-memo [vbox objects]
                          #(make-is-frame-overlap vbox objects))
 
+        ;; Root frames holding an animated shape render live: a static
+        ;; thumbnail would freeze the animation.
+        animated-frames (mf/with-memo [objects]
+                          (into #{}
+                                (keep (fn [shape]
+                                        (when (ctsa/active? (:animation shape))
+                                          (:id (cfh/get-root-frame objects (:id shape))))))
+                                (vals objects)))
+
         shapes         (mf/with-memo [shapes vbox frame-overlap?]
                          (cond->> shapes
                            (some? vbox)
@@ -87,7 +97,8 @@
        (for [shape shapes]
          (let [thumbnail?
                (and (not disable-thumbnails)
-                    (not (contains? active-frames (dm/get-prop shape :id))))]
+                    (not (contains? active-frames (dm/get-prop shape :id)))
+                    (not (contains? animated-frames (dm/get-prop shape :id))))]
            [:g.ws-shape-wrapper {:key (dm/str (dm/get-prop shape :id))}
             (if ^boolean (cfh/frame-shape? shape)
               [:& root-frame-wrapper
