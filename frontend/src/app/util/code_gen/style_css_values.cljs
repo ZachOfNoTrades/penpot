@@ -12,6 +12,7 @@
    [app.common.files.helpers :as cfh]
    [app.common.geom.matrix :as gmt]
    [app.common.geom.shapes :as gsh]
+   [app.common.types.shape.animation :as ctsa]
    [app.common.types.shape.layout :as ctl]
    [app.main.ui.formats :as fmt]
    [app.util.code-gen.common :as cgc]
@@ -578,6 +579,7 @@
     :filter (get-filter shape)
     :backdrop-filter (get-backdrop-filter shape)
     :overflow (get-overflow shape)
+    :animation (ctsa/animation->css-value (:animation shape))
 
     ;; Display
     :display (get-display shape)

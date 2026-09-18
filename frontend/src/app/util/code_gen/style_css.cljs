@@ -13,6 +13,7 @@
    [app.common.geom.shapes.bounds :as gsb]
    [app.common.geom.shapes.points :as gpo]
    [app.common.text :as legacy.txt]
+   [app.common.types.shape.animation :as ctsa]
    [app.common.types.shape.layout :as ctl]
    [app.common.types.text :as types.text]
    [app.main.ui.shapes.text.styles :as sts]
@@ -86,6 +87,7 @@ body {
    :opacity
    :overflow
    :blend-mode
+   :animation
 
    ;; Flex/grid related properties
    :display
@@ -322,6 +324,20 @@ body {
    (when-let [prop (shape->css-property shape objects property options)]
      (format-css-value prop options))))
 
+(defn- animation-keyframes
+  "The @keyframes rules for every preset used by the given shapes."
+  [shapes]
+  (let [types (into (sorted-set)
+                    (comp (map :animation)
+                          (filter ctsa/active?)
+                          (map :type))
+                    shapes)]
+    (when (seq types)
+      (->> types
+           (map ctsa/keyframes-css)
+           (str/join "\n")
+           (dm/str "\n\n")))))
+
 (defn generate-style
   ([objects root-shapes all-shapes]
    (generate-style objects root-shapes all-shapes nil))
@@ -331,7 +347,8 @@ body {
       (if with-prelude? prelude "")
       (->> all-shapes
            (keep #(get-shape-css-selector % objects options))
-           (str/join "\n\n"))))))
+           (str/join "\n\n"))
+      (animation-keyframes all-shapes)))))
 
 (defn shadow->css
   [shadow]
