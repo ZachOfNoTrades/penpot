@@ -104,7 +104,7 @@
 
     [:*
      [:div {:class (stl/css-case :first-row true :hidden is-hidden)}
-      [:> select* {:class (stl/css :type-select)
+      [:> select* {:wrapper-class (stl/css :type-select)
                    :default-selected (d/name (:type value))
                    :aria-label (tr "workspace.options.animation-options.type")
                    :options type-options
@@ -145,13 +145,13 @@
                           :value (or (:delay value) 0)}]]
 
      [:div {:class (stl/css :grid-row)}
-      [:> select* {:class (stl/css :half-select)
+      [:> select* {:wrapper-class (stl/css :half-select)
                    :default-selected (d/name (or (:easing value) :ease))
                    :aria-label (tr "workspace.options.animation-options.easing")
                    :options easing-options
                    :disabled is-hidden
                    :on-change handle-easing}]
-      [:> select* {:class (stl/css :half-select)
+      [:> select* {:wrapper-class (stl/css :half-select)
                    :default-selected (iterations->id (or (:iterations value) 1))
                    :aria-label (tr "workspace.options.animation-options.repeat")
                    :options (get-iteration-options (or (:iterations value) 1))
@@ -159,7 +159,7 @@
                    :on-change handle-repeat}]]
 
      [:div {:class (stl/css :grid-row)}
-      [:> select* {:class (stl/css :half-select)
+      [:> select* {:wrapper-class (stl/css :half-select)
                    :default-selected (d/name (or (:direction value) :normal))
                    :aria-label (tr "workspace.options.animation-options.direction")
                    :options direction-options
