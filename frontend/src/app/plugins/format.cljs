@@ -239,6 +239,27 @@
           :value value
           :hidden hidden})))
 
+;; export interface ShapeAnimation {
+;;   type: string;
+;;   duration: number;
+;;   delay?: number;
+;;   easing?: string;
+;;   direction?: string;
+;;   iterations?: number | 'infinite';
+;;   hidden?: boolean;
+;; }
+(defn format-shape-animation
+  [{:keys [type duration delay easing direction iterations hidden] :as animation}]
+  (when (some? animation)
+    (obj/without-empty
+     #js {:type (format-key type)
+          :duration duration
+          :delay delay
+          :easing (format-key easing)
+          :direction (format-key direction)
+          :iterations (if (= iterations :infinite) "infinite" iterations)
+          :hidden hidden})))
+
 ;; export interface Export {
 ;;   type: 'png' | 'jpeg' | 'webp' | 'svg' | 'pdf';
 ;;   scale: number;

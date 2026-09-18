@@ -249,6 +249,28 @@
       :hidden (obj/get blur "hidden")})))
 
 
+;; export interface ShapeAnimation {
+;;   type: 'spin' | 'pulse' | 'blink' | 'bounce' | 'shake' | 'fade-in' | 'fade-out' | 'scale-in' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right';
+;;   duration?: number;
+;;   delay?: number;
+;;   easing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
+;;   direction?: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse';
+;;   iterations?: number | 'infinite';
+;;   hidden?: boolean;
+;; }
+(defn parse-shape-animation
+  [^js animation]
+  (when (some? animation)
+    (let [iterations (obj/get animation "iterations")]
+      (d/without-nils
+       {:type (-> (obj/get animation "type") parse-keyword)
+        :duration (obj/get animation "duration")
+        :delay (obj/get animation "delay")
+        :easing (-> (obj/get animation "easing") parse-keyword)
+        :direction (-> (obj/get animation "direction") parse-keyword)
+        :iterations (if (= iterations "infinite") :infinite iterations)
+        :hidden (obj/get animation "hidden")}))))
+
 ;; export interface Export {
 ;;   type: 'png' | 'jpeg' | 'webp' | 'svg' | 'pdf';
 ;;   scale: number;

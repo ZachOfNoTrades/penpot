@@ -24,6 +24,7 @@
    [app.common.types.grid :as ctg]
    [app.common.types.path :as path]
    [app.common.types.shape :as cts]
+   [app.common.types.shape.animation :as ctsa]
    [app.common.types.shape.background-blur :as ctsbb]
    [app.common.types.shape.blur :as ctsb]
    [app.common.types.shape.export :as ctse]
@@ -653,7 +654,30 @@
                     :else
                     (st/emit! (dwsh/update-shapes [id] #(assoc % :background-blur value)))))))}
 
-           :exports
+:animation
+           {:this true
+            :get #(-> % u/proxy->shape :animation format/format-shape-animation)
+            :set
+            (fn [self value]
+              (let [id (obj/get self "$id")]
+                (if (nil? value)
+                  (st/emit! (dwsh/update-shapes [id] #(dissoc % :animation)))
+                  (let [parsed (parser/parse-shape-animation value)
+                        value  (merge (ctsa/create-animation (or (:type parsed) :spin)) parsed)]
+                    (cond
+                      (not (sm/validate ctsa/schema:animation value))
+                      (u/not-valid plugin-id :animation value)
+
+                      (not (r/check-permission plugin-id "content:write"))
+                      (u/not-valid plugin-id :animation "Plugin doesn't have 'content:write' permission")
+
+                      (not (u/page-active? page-id))
+                      (u/not-valid plugin-id :animation "Cannot modify a page that is not currently active")
+
+                      :else
+                      (st/emit! (dwsh/update-shapes [id] #(assoc % :animation value))))))))}
+
+                      :exports
            {:this true
             :get (fn [^js self]
                    (exports/format-exports (-> self u/proxy->shape :exports)

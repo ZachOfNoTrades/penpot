@@ -186,6 +186,54 @@ export interface ActiveUser extends User {
 export type Animation = Dissolve | Slide | Push;
 
 /**
+ * A CSS animation played on a shape in the workspace, the viewer and
+ * exported SVG/CSS. `type` selects one of the fixed keyframe presets.
+ */
+export interface ShapeAnimation {
+  /**
+   * The keyframe preset.
+   */
+  type:
+    | 'spin'
+    | 'pulse'
+    | 'blink'
+    | 'bounce'
+    | 'shake'
+    | 'fade-in'
+    | 'fade-out'
+    | 'scale-in'
+    | 'slide-up'
+    | 'slide-down'
+    | 'slide-left'
+    | 'slide-right';
+  /**
+   * Duration of one cycle in milliseconds. Defaults to 1000.
+   */
+  duration?: number;
+  /**
+   * Delay before the first cycle in milliseconds. Defaults to 0.
+   */
+  delay?: number;
+  /**
+   * Timing function. Defaults to 'linear' for spin, 'ease-in-out' otherwise.
+   */
+  easing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
+  /**
+   * Playback direction. Defaults to 'normal'.
+   */
+  direction?: 'normal' | 'reverse' | 'alternate' | 'alternate-reverse';
+  /**
+   * Number of cycles, or 'infinite'. Looping presets default to
+   * 'infinite', entrance and exit presets to 1.
+   */
+  iterations?: number | 'infinite';
+  /**
+   * Pauses the animation without removing it. Defaults to false.
+   */
+  hidden?: boolean;
+}
+
+/**
  * Represents blur properties in Penpot.
  * This interface includes properties for defining the type and intensity of a blur effect, along with its visibility.
  */
@@ -3795,6 +3843,11 @@ export interface ShapeBase extends PluginData {
    * rather than on the shape's own content.
    */
   backgroundBlur?: Blur;
+
+  /**
+   * The CSS animation played on the shape. Set to `null` to remove it.
+   */
+  animation?: ShapeAnimation | null;
 
   /**
    * The export settings of the shape.
