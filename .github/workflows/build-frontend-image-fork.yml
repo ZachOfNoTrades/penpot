@@ -1,0 +1,62 @@
+name: Build frontend image (fork)
+
+# Builds the frontend bundle in the upstream devenv image and packages it
+# with the upstream frontend Dockerfile. The image is exported as a
+# gzipped tarball artifact, loadable with `docker load`.
+
+on:
+  push:
+    branches:
+      - 'feat/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-frontend-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+
+    steps:
+      - name: Free runner disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: |
+          git fetch --tags --force https://github.com/penpot/penpot.git 'refs/tags/2.17.*:refs/tags/2.17.*'
+          git describe --tags --match "*.*.*"
+
+      - name: Build frontend bundle
+        run: ./manage.sh build-frontend-bundle
+
+      - name: Build frontend image
+        run: |
+          version=$(git describe --tags --match "*.*.*")
+          rsync -a --delete ./bundles/frontend/ ./docker/images/bundle-frontend/
+          docker build \
+            -t "penpot-frontend-fork:${version}" \
+            --build-arg BUNDLE_PATH="./bundle-frontend/" \
+            -f docker/images/Dockerfile.frontend docker/images
+          docker save "penpot-frontend-fork:${version}" | gzip > penpot-frontend-fork.tar.gz
+          echo "${version}" > penpot-frontend-fork.version
+          ls -lh penpot-frontend-fork.tar.gz
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: penpot-frontend-fork
+          path: |
+            penpot-frontend-fork.tar.gz
+            penpot-frontend-fork.version
+          retention-days: 30
