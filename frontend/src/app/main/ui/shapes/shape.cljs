@@ -9,6 +9,7 @@
    [app.common.data :as d]
    [app.common.data.macros :as dm]
    [app.common.files.helpers :as cfh]
+   [app.common.types.shape.animation :as ctsa]
    [app.main.refs :as refs]
    [app.main.ui.context :as muc]
    [app.main.ui.hooks :as h]
@@ -47,6 +48,21 @@
    (if ^boolean (obj/array? children)
      (->> children (map #(propagate-wrapper-styles-child % wrapper-props)))
      (-> children (propagate-wrapper-styles-child wrapper-props)))))
+
+(mf/defc animated-content*
+  "Wraps the shape content in a group that plays the shape animation.
+  The animation lives on an inner group so it never competes with the
+  transform attribute of the shape wrapper."
+  [{:keys [animation animation-css children]}]
+  (let [style (mf/with-memo [animation-css]
+                (-> (obj/create)
+                    (obj/set! "animation" animation-css)
+                    (obj/set! "transformBox" "fill-box")
+                    (obj/set! "transformOrigin" "center")))]
+    [:g {:class "penpot-animated"}
+     [:style (ctsa/keyframes-css (:type animation))]
+     [:> :g #js {:style style}
+      children]]))
 
 (mf/defc shape-container
   {::mf/forward-ref true
@@ -114,6 +130,9 @@
         svg-group?
         (and (contains? shape :svg-attrs) (= :group type))
 
+        animation        (:animation shape)
+        animation-css    (ctsa/animation->css-value animation)
+
         children
         (cond-> children
           svg-group?
@@ -140,4 +159,7 @@
        (when-not (cfh/text-shape? shape)
          [:& fills/fills            {:shape shape :render-id render-id}])]
 
-      children]]))
+      (if (some? animation-css)
+        [:> animated-content* {:animation animation :animation-css animation-css}
+         children]
+        children)]]))
