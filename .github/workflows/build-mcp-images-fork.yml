@@ -1,0 +1,73 @@
+name: Build MCP images (fork)
+
+# Builds the MCP server image (upstream Dockerfile, fork source) and the
+# headless workspace host image. Both are exported as gzipped tarball
+# artifacts, loadable with `docker load`.
+
+on:
+  push:
+    branches:
+      - 'feat/**'
+    paths:
+      - 'mcp/**'
+      - 'docker/images/Dockerfile.mcp'
+      - 'docker/images/Dockerfile.mcp-headless'
+      - '.github/workflows/build-mcp-images-fork.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-mcp-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: |
+          git fetch --tags --force https://github.com/penpot/penpot.git 'refs/tags/2.17.*:refs/tags/2.17.*'
+          git describe --tags --match "*.*.*"
+
+      - name: Build MCP bundle
+        run: ./manage.sh build-mcp-bundle
+
+      - name: Build MCP server image
+        run: |
+          version=$(git describe --tags --match "*.*.*")
+          rsync -a --delete ./bundles/mcp/ ./docker/images/bundle-mcp/
+          docker build \
+            -t "penpot-mcp-fork:${version}" \
+            --build-arg BUNDLE_PATH="./bundle-mcp/" \
+            -f docker/images/Dockerfile.mcp docker/images
+          docker save "penpot-mcp-fork:${version}" | gzip > penpot-mcp-fork.tar.gz
+          echo "${version}" > penpot-mcp-fork.version
+
+      - name: Build headless host image
+        run: |
+          version=$(git describe --tags --match "*.*.*")
+          docker build \
+            -t "penpot-mcp-headless-fork:${version}" \
+            -f docker/images/Dockerfile.mcp-headless .
+          docker save "penpot-mcp-headless-fork:${version}" | gzip > penpot-mcp-headless-fork.tar.gz
+          echo "${version}" > penpot-mcp-headless-fork.version
+          ls -lh ./*.tar.gz
+
+      - name: Upload image artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: penpot-mcp-fork-images
+          path: |
+            penpot-mcp-fork.tar.gz
+            penpot-mcp-fork.version
+            penpot-mcp-headless-fork.tar.gz
+            penpot-mcp-headless-fork.version
+          retention-days: 30

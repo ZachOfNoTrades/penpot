@@ -282,8 +282,61 @@ export class PluginBridge {
     public async executePluginTask<TResult extends PluginTaskResult<any>>(
         task: PluginTask<any, TResult>
     ): Promise<TResult> {
+        await this.wakeHeadlessHostIfNeeded();
         this.sendPluginTask(task, this.redisBridge !== undefined);
         return await task.getResultPromise();
+    }
+
+    /**
+     * Returns the plugin connection currently registered for the given user token, if any.
+     */
+    public getConnectionForToken(userToken: string): unknown {
+        return this.clientsByToken.get(userToken);
+    }
+
+    /**
+     * Waits until a plugin connection is registered for the given user token.
+     *
+     * @param userToken - The token whose connection to wait for
+     * @param previous - A connection to disregard (e.g. the one that existed before a file switch)
+     * @param timeoutMs - Maximum time to wait
+     * @returns true if a (new) connection appeared within the timeout
+     */
+    public async waitForConnection(userToken: string, previous?: unknown, timeoutMs: number = 90_000): Promise<boolean> {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+            const connection = this.clientsByToken.get(userToken);
+            if (connection && connection !== previous) {
+                return true;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+        return false;
+    }
+
+    /**
+     * When the session's token belongs to the headless host, starts the host's browser if no
+     * plugin is connected (and waits for the plugin), or keeps it alive if one already is.
+     * Tokens not served by the headless host are left untouched.
+     */
+    private async wakeHeadlessHostIfNeeded(): Promise<void> {
+        const headless = this.mcpServer.headlessHost;
+        if (!headless || !this.mcpServer.isMultiUserMode() || this.redisBridge) {
+            return;
+        }
+        const userToken = this.mcpServer.getSessionContext()?.userToken;
+        if (!userToken || !(await headless.servesToken(userToken))) {
+            return;
+        }
+        if (this.clientsByToken.has(userToken)) {
+            headless.touch();
+            return;
+        }
+        this.logger.info("No plugin connected for the headless host's token; waking the headless host");
+        await headless.ensure();
+        if (!(await this.waitForConnection(userToken))) {
+            throw new Error("The headless Penpot host started, but its MCP plugin did not connect in time.");
+        }
     }
 
     /**

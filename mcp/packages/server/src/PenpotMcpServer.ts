@@ -20,6 +20,8 @@ import { ReadTaigaIssueTool } from "./tools/ReadTaigaIssueTool";
 import { NreplClient } from "./NreplClient";
 import { ReplServer } from "./ReplServer";
 import { ApiDocs } from "./ApiDocs";
+import { HeadlessHost } from "./HeadlessHost";
+import { HeadlessFileTools } from "./tools/HeadlessFileTools";
 
 /**
  * Session context for request-scoped data.
@@ -83,6 +85,11 @@ export class PenpotMcpServer {
     public readonly configLoader: ConfigurationLoader;
     private app: any;
     public readonly pluginBridge: PluginBridge;
+
+    /**
+     * Client for the headless workspace host; present when `PENPOT_MCP_HEADLESS_URI` is set.
+     */
+    public readonly headlessHost: HeadlessHost | undefined = HeadlessHost.fromEnvironment();
     private readonly replServer: ReplServer;
     private apiDocs: ApiDocs;
     private readonly penpotHighLevelOverview: string;
@@ -226,6 +233,9 @@ export class PenpotMcpServer {
             toolInstances.push(new CljsCompilerOutputTool(this, nreplClient));
             toolInstances.push(new CljCheckParentheses(this));
             toolInstances.push(new ReadTaigaIssueTool(this));
+        }
+        if (this.headlessHost) {
+            toolInstances.push(...HeadlessFileTools.create(this, this.headlessHost));
         }
 
         return toolInstances.map((instance) => {

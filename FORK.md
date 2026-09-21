@@ -6,6 +6,13 @@ Adds CSS animations to shapes. An animation is a keyframe preset plus timing, st
 shape and played in the workspace canvas, the viewer, exported SVG, and the inspect code
 output.
 
+## Headless MCP host
+
+Branch `feat/headless-mcp` (on top of this branch) lets MCP clients work without a browser tab:
+a headless Chromium keeps a workspace open under a dedicated agent profile, and the MCP server
+wakes it on demand and gains `list_files`, `open_file` and `create_file` tools for that
+profile's token. See `mcp/packages/headless/README.md`.
+
 ## Data model
 
 Optional shape attribute `:animation` (`app.common.types.shape.animation`):

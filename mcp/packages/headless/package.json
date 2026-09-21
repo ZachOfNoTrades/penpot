@@ -1,0 +1,14 @@
+{
+  "name": "mcp-headless",
+  "version": "1.0.0",
+  "description": "Keeps a Penpot workspace open in headless Chromium so the MCP plugin stays connected without a user's browser",
+  "type": "module",
+  "main": "src/index.mjs",
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "license": "MPL-2.0",
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}
