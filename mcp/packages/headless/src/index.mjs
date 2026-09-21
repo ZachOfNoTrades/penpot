@@ -206,6 +206,7 @@ let page = null;
 let current = null; // { id, name, teamId, projectId, pageId }
 let mcpStatus = "disconnected";
 let lastActivity = Date.now();
+let inFlight = 0;
 const statusWaiters = new Set();
 
 function touch() {
@@ -369,7 +370,9 @@ function status() {
 }
 
 setInterval(() => {
-    if (browser && Date.now() - lastActivity > config.idleMs) {
+    // lastActivity is stale when a request arrives after a long idle period, so a
+    // launch or navigation in progress must never be reaped
+    if (browser && inFlight === 0 && Date.now() - lastActivity > config.idleMs) {
         void closeBrowser("idle");
     }
 }, 30_000).unref();
@@ -381,7 +384,17 @@ setInterval(() => {
 // browser operations are serialized so concurrent tool calls cannot interleave navigations
 let queue = Promise.resolve();
 function serialized(fn) {
-    const run = queue.then(fn, fn);
+    const tracked = async () => {
+        inFlight++;
+        touch();
+        try {
+            return await fn();
+        } finally {
+            touch();
+            inFlight--;
+        }
+    };
+    const run = queue.then(tracked, tracked);
     queue = run.catch(() => {});
     return run;
 }
